@@ -1,13 +1,41 @@
-
 class Pattern {
     constructor() {
     }
+
     RegisterOnReady() {
         $($.proxy(this.onReady, this))
     }
+
     onReady() {
+
+        let onSuccess = $.proxy(function (data) {
+            this.setHtml(data)
+        }, this);
+        let onComplete = $.proxy(function (xhr, status) {
+            $("#Id").prop("disabled", false)
+        }, this);
+        let onError = $.proxy(function (xhr, status, error) {
+            console.log(xhr.status + " - " + xhr.statusText)
+        }, this);
+
+        let params = {
+            type: "GET",
+            dataType: "json",
+            success: onSuccess,
+            complete: onComplete,
+            error: onError
+        };
+
+        $.ajax("https://api.myjson.com/bins/crrrn", params);
+
         console.log("Pattern.onReady")
     }
+
+    setHtml(data) {
+        console.log(data);
+    }
+
+
     static GetSelect(json, selected) {
         let html = '<select>';
         for (var property in json) {
@@ -22,6 +50,7 @@ class Pattern {
         html += '</select>';
         return html
     }
+
     static GetHtmlRow(step) {
         let settings = $.extend({
             if: "#FFFFFF",

@@ -26,7 +26,7 @@ class Langton {
         $(this.Ant).on("move", $.proxy(this.displayAntInfo, this));
         $("input[type=radio]").on("click", $.proxy(this.resetGrid, this));
         $("#Reset").on("click", $.proxy(this.resetGrid, this));
-        $("#MoveForward").on("click", $.proxy(this.advanceOnClick, this));
+        $("#MoveForward").on("click", $.proxy(this.advance, this));
         $("#Start").on("click", $.proxy(this.switchSimulation, this));
 
         console.log("Langton.onReady")
@@ -48,16 +48,14 @@ class Langton {
     }
 
     advance() {
-        let color = this.Grid.GetColor(this.Ant.X, this.Ant.Y);
-        this.Grid.SetColor(this.Ant.X, this.Ant.Y, color === "#FFFFFF" ? "#000000" : "#FFFFFF");
-        this.Ant.Turn(color === "#FFFFFF" ? "right" : "left");
-        this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
-    }
-
-    advanceOnClick() {
         let steps = this.Simulation.Steps;
         for (let i = 0; i < steps; i++) {
-            langton.advance();
+            if (this.Grid.GetColor(this.Ant.X, this.Ant.Y) !== null) {
+                let color = this.Grid.GetColor(this.Ant.X, this.Ant.Y);
+                this.Grid.SetColor(this.Ant.X, this.Ant.Y, color === "#FFFFFF" ? "#000000" : "#FFFFFF");
+                this.Ant.Turn(color === "#FFFFFF" ? "right" : "left");
+                this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
+            }
         }
     }
 
@@ -69,7 +67,7 @@ class Langton {
     }
 
     simulate() {
-        if (this.Simulation.started && this.Grid.GetColor(this.Ant.X, this.Ant.Y) !== null) {
+        if (this.Simulation.started) {
             langton.advance();
             setTimeout(() => langton.simulate(), this.Simulation.Gap);
         }
