@@ -26,6 +26,8 @@ class Langton {
         $(this.Ant).on("move", $.proxy(this.displayAntInfo, this));
         $("input[type=radio]").on("click", $.proxy(this.resetGrid, this));
         $("#Reset").on("click", $.proxy(this.resetGrid, this));
+        $("table").on("change", $.proxy(this.resetGrid, this));
+        $("#Pattern").on("change", $.proxy(this.resetGrid, this));
         $("#MoveForward").on("click", $.proxy(this.advance, this));
         $("#Start").on("click", $.proxy(this.switchSimulation, this));
 
@@ -43,7 +45,7 @@ class Langton {
         this.Grid.Size = this.Simulation.Size;
         this.Ant.Reset(this.Grid.MiddleX, this.Grid.MiddleY);
         this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
-        this.Simulation.started ? this.switchSimulation() : null;
+        this.Simulation.started ? this.switchSimulation() : $("#Start").text("Démarrer");
         langton.displayAntInfo();
     }
 
@@ -52,8 +54,8 @@ class Langton {
         for (let i = 0; i < steps; i++) {
             if (this.Grid.GetColor(this.Ant.X, this.Ant.Y) !== null) {
                 let color = this.Grid.GetColor(this.Ant.X, this.Ant.Y);
-                this.Grid.SetColor(this.Ant.X, this.Ant.Y, this.Pattern.GetColorConfiguration(color) || "#FFFFFF");
-                this.Ant.Turn(this.Pattern.GetTurnConfiguration(color));
+                this.Grid.SetColor(this.Ant.X, this.Ant.Y, this.Pattern.GetConfiguration(color, "color") || "#FFFFFF");
+                this.Ant.Turn(this.Pattern.GetConfiguration(color, "direction"));
                 this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
             }
         }
@@ -61,8 +63,8 @@ class Langton {
 
     switchSimulation() {
         this.Simulation.started = !this.Simulation.started;
-        $("#Start").text(this.Simulation.started ? "Arrêter" : "Démarrer");
-        if (this.Simulation.started) {
+        $("#Start").text(this.Simulation.started ? "Pause" : (this.Ant.NbSteps > 0 ? "Reprendre" : "Démarrer"));
+        if (this.Simulation .started) {
             langton.simulate();
         }
     }

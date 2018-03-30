@@ -37,12 +37,11 @@ class Pattern {
         return $("#Pattern").val();
     }
 
-    GetColorConfiguration(color) {
-        return this.Steps.find(step => step.if === color).then.color;
-    }
-
-    GetTurnConfiguration(color) {
-        return this.Steps.find(step => step.if === color).then.direction;
+    GetConfiguration(color, type) {
+        let rows = $("#CurrentPattern > tbody")[0].rows;
+        let row = Array.prototype.find.call(rows, (row) => row.dataset.ifColor === color);
+        let td = Array.prototype.find.call(row.children, (td) => td.className === (type === "color" ? "then-color" : "then-direction"));
+        return td.children[0].value;
     }
 
     setHtml(patterns) {
