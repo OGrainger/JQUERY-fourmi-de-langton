@@ -41,12 +41,27 @@ class Pattern {
 
     onChangeSelect(e) {
         $("#Pattern").val("");
-        let changedRow = e.target.parentElement.parentElement;
-        console.log($("table tr")[3].rowIndex === changedRow.rowIndex);
-        let rows = $("table tr");
-        for (let i in rows) {
-            if (rows[i].rowIndex > changedRow.rowIndex) {
-                rows[i].remove();
+        if (e.target.parentElement.className === "then-color") {
+            let changedRow = e.target.parentElement.parentElement;
+            let rows = $("table tr");
+            for (let i in rows) {
+                if (rows[i].rowIndex > changedRow.rowIndex) {
+                    rows[i].remove();
+                }
+                //console.log(rows[i].children[1].children[0] && rows[i].children[1].children[0].value)
+                /*if (rows[i].children[1].children[0] && rows[i].children[1].children[0].value === changedRow.children[1].children[0].value) {
+                    rows[i].children[1].children[0].addClass("alert");
+                }*/
+            }
+            if (e.target.value !== "#FFFFFF") {
+                let newPattern = {
+                    if: e.target.value,
+                    then: {
+                        color: "#FFFFFF",
+                        direction: "left"
+                    }
+                };
+                $(Pattern.GetHtmlRow(newPattern)).appendTo("#CurrentPattern > tbody");
             }
         }
     }
