@@ -43,7 +43,7 @@ class Langton {
         this.Grid.Size = this.Simulation.Size;
         this.Ant.Reset(this.Grid.MiddleX, this.Grid.MiddleY);
         this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
-        this.Simulation.started = false;
+        this.Simulation.started ? this.switchSimulation() : null;
         langton.displayAntInfo();
     }
 
@@ -52,8 +52,8 @@ class Langton {
         for (let i = 0; i < steps; i++) {
             if (this.Grid.GetColor(this.Ant.X, this.Ant.Y) !== null) {
                 let color = this.Grid.GetColor(this.Ant.X, this.Ant.Y);
-                this.Grid.SetColor(this.Ant.X, this.Ant.Y, color === "#FFFFFF" ? "#000000" : "#FFFFFF");
-                this.Ant.Turn(color === "#FFFFFF" ? "right" : "left");
+                this.Grid.SetColor(this.Ant.X, this.Ant.Y, this.Pattern.GetColorConfiguration(color) || "#FFFFFF");
+                this.Ant.Turn(this.Pattern.GetTurnConfiguration(color));
                 this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
             }
         }
@@ -61,6 +61,7 @@ class Langton {
 
     switchSimulation() {
         this.Simulation.started = !this.Simulation.started;
+        $("#Start").text(this.Simulation.started ? "Arrêter" : "Démarrer");
         if (this.Simulation.started) {
             langton.simulate();
         }
