@@ -8,6 +8,8 @@ class Pattern {
 
     onReady() {
 
+        $("table").on("change", $.proxy(this.onChangeSelect, this));
+
         let onSuccess = $.proxy(function (data) {
             this.setHtml(data.patterns);
         }, this);
@@ -35,6 +37,18 @@ class Pattern {
 
     get Val() {
         return $("#Pattern").val();
+    }
+
+    onChangeSelect(e) {
+        $("#Pattern").val("");
+        let changedRow = e.target.parentElement.parentElement;
+        console.log($("table tr")[3].rowIndex === changedRow.rowIndex);
+        let rows = $("table tr");
+        for (let i in rows) {
+            if (rows[i].rowIndex > changedRow.rowIndex) {
+                rows[i].remove();
+            }
+        }
     }
 
     GetConfiguration(color, type) {
