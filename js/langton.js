@@ -30,7 +30,6 @@ class Langton {
         $("#Pattern").on("change", $.proxy(this.resetGrid, this));
         $("#MoveForward").on("click", $.proxy(this.advance, this));
         $("#Start").on("click", $.proxy(this.switchSimulation, this));
-        $(".condition").removeClass("condition");
 
         console.log("Langton.onReady")
     }
@@ -48,7 +47,6 @@ class Langton {
         this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
         this.Simulation.started ? this.switchSimulation() : $("#Start").text("Démarrer");
         langton.displayAntInfo();
-        $("#Start").text("Demarrer")
     }
 
     advance() {
@@ -68,9 +66,6 @@ class Langton {
         $("#Start").text(this.Simulation.started ? "Pause" : (this.Ant.NbSteps > 0 ? "Reprendre" : "Démarrer"));
         if (this.Simulation .started) {
             langton.simulate();
-            $("#Start").text("Stop")
-        } else {
-            $("#Start").text("Reprendre")
         }
     }
 
