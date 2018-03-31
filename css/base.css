@@ -152,3 +152,6 @@ table button {
     width: 100%;
 }
 
+.alert {
+    color: red;
+}

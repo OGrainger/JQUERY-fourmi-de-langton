@@ -41,24 +41,38 @@ class Pattern {
 
     onChangeSelect(e) {
         $("#Pattern").val("");
+
+        //Si on change une couleur
         if (e.target.parentElement.className === "then-color") {
             let changedRow = e.target.parentElement.parentElement;
             let rows = $("table tr");
+
+            //On enlève les lignes suivantes
             for (let i in rows) {
                 if (rows[i].rowIndex > changedRow.rowIndex) {
                     rows[i].remove();
                 }
-                //console.log(rows[i].children[1].children[0] && rows[i].children[1].children[0].value)
-                /*if (rows[i].children[1].children[0] && rows[i].children[1].children[0].value === changedRow.children[1].children[0].value) {
-                    rows[i].children[1].children[0].addClass("alert");
-                }*/
             }
+
+            //On alerte si la couleur est déjà présente
+            let warning = false;
+            for (let i in rows) {
+                if (rows[i].rowIndex > 1) {
+                    if (rows[i].rowIndex !== changedRow.rowIndex && rows[i].children[1].children[0].value === e.target.value) {
+                        warning = true;
+                    }
+                }
+            }
+            changedRow.children[1].children[0].className = warning ? "alert" : "";
+
+            //Si la couleur sélectionnée n'est pas 'blanc', on ajoute une ligne
             if (e.target.value !== "#FFFFFF") {
                 let newPattern = {
                     if: e.target.value,
                     then: {
                         color: "#FFFFFF",
-                        direction: "left"
+                        //Inverse la direction
+                        direction: changedRow.children[2].children[0].value === "left" ? "right" : "left"
                     }
                 };
                 $(Pattern.GetHtmlRow(newPattern)).appendTo("#CurrentPattern > tbody");
