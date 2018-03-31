@@ -1,16 +1,120 @@
-
 class Pattern {
     constructor() {
     }
+
     RegisterOnReady() {
         $($.proxy(this.onReady, this))
     }
+
     onReady() {
+
+        $("table").on("change", $.proxy(this.onChangeSelect, this));
+
+        let onSuccess = $.proxy(function (data) {
+            this.setHtml(data.patterns);
+        }, this);
+        let onComplete = $.proxy(function (xhr, status) {
+            $(".condition").removeClass("condition");
+        }, this);
+        let onError = $.proxy(function (xhr, status, error) {
+            console.log(xhr.status + " - " + xhr.statusText)
+        }, this);
+
+        let params = {
+            type: "GET",
+            dataType: "json",
+            success: onSuccess,
+            complete: onComplete,
+            error: onError
+        };
+
+        $.ajax("https://api.myjson.com/bins/crrrn", params);
+
+        $("#Pattern").on("change", $.proxy(this.setTable, this));
+
         console.log("Pattern.onReady")
     }
+
+    get Val() {
+        return $("#Pattern").val();
+    }
+
+    onChangeSelect(e) {
+        $("#Pattern").val("");
+
+        //Si on change une couleur
+        if (e.target.parentElement.className === "then-color") {
+            let changedRow = e.target.parentElement.parentElement;
+            let rows = $("table tr");
+
+            //On enlève les lignes suivantes
+            for (let i in rows) {
+                if (rows[i].rowIndex > changedRow.rowIndex) {
+                    rows[i].remove();
+                }
+            }
+
+            //On alerte si la couleur est déjà présente
+            let warning = false;
+            for (let i in rows) {
+                if (rows[i].rowIndex > 1) {
+                    if (rows[i].rowIndex !== changedRow.rowIndex && rows[i].children[1].children[0].value === e.target.value) {
+                        warning = true;
+                    }
+                }
+            }
+            changedRow.children[1].children[0].className = warning ? "alert" : "";
+
+            //Si la couleur sélectionnée n'est pas 'blanc', on ajoute une ligne
+            if (e.target.value !== "#FFFFFF") {
+                let newPattern = {
+                    if: e.target.value,
+                    then: {
+                        color: "#FFFFFF",
+                        //Inverse la direction
+                        direction: changedRow.children[2].children[0].value === "left" ? "right" : "left"
+                    }
+                };
+                $(Pattern.GetHtmlRow(newPattern)).appendTo("#CurrentPattern > tbody");
+            }
+        }
+    }
+
+    GetConfiguration(color, type) {
+        let rows = $("#CurrentPattern > tbody")[0].rows;
+        let row = Array.prototype.find.call(rows, (row) => row.dataset.ifColor === color);
+        let td = Array.prototype.find.call(row.children, (td) => td.className === (type === "color" ? "then-color" : "then-direction"));
+        return td.children[0].value;
+    }
+
+    setHtml(patterns) {
+        this.Patterns = patterns;
+        this.GeneratePatternSelect();
+        this.setTable();
+    }
+
+    setTable() {
+        $("#CurrentPattern > tbody").empty();
+        this.Steps = this.Patterns.find(pattern => pattern.name === this.Val).steps;
+        for (let i in this.Steps) {
+            $(Pattern.GetHtmlRow(this.Steps[i])).appendTo("#CurrentPattern > tbody");
+        }
+    }
+
+    GeneratePatternSelect() {
+        let patternSelect = $("#Pattern");
+        let html = '<select>';
+        for (let i in this.Patterns) {
+            html += '<option value="' + this.Patterns[i].name + '"';
+            html += '>' + this.Patterns[i].name + '</option>'
+        }
+        patternSelect.html(html);
+        patternSelect.val("Simple");
+    }
+
     static GetSelect(json, selected) {
         let html = '<select>';
-        for (var property in json) {
+        for (let property in json) {
             html += '<option value="' + property + '"';
             if (selected === property) {
                 html += ' selected="selected"'
@@ -22,6 +126,7 @@ class Pattern {
         html += '</select>';
         return html
     }
+
     static GetHtmlRow(step) {
         let settings = $.extend({
             if: "#FFFFFF",

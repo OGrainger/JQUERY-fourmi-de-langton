@@ -26,7 +26,9 @@ class Langton {
         $(this.Ant).on("move", $.proxy(this.displayAntInfo, this));
         $("input[type=radio]").on("click", $.proxy(this.resetGrid, this));
         $("#Reset").on("click", $.proxy(this.resetGrid, this));
-        $("#MoveForward").on("click", $.proxy(this.advanceOnClick, this));
+        $("table").on("change", $.proxy(this.resetGrid, this));
+        $("#Pattern").on("change", $.proxy(this.resetGrid, this));
+        $("#MoveForward").on("click", $.proxy(this.advance, this));
         $("#Start").on("click", $.proxy(this.switchSimulation, this));
 
         console.log("Langton.onReady")
@@ -43,33 +45,32 @@ class Langton {
         this.Grid.Size = this.Simulation.Size;
         this.Ant.Reset(this.Grid.MiddleX, this.Grid.MiddleY);
         this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
-        this.Simulation.started = false;
+        this.Simulation.started ? this.switchSimulation() : $("#Start").text("Démarrer");
         langton.displayAntInfo();
     }
 
     advance() {
-        let color = this.Grid.GetColor(this.Ant.X, this.Ant.Y);
-        this.Grid.SetColor(this.Ant.X, this.Ant.Y, color === "#FFFFFF" ? "#000000" : "#FFFFFF");
-        this.Ant.Turn(color === "#FFFFFF" ? "right" : "left");
-        this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
-    }
-
-    advanceOnClick() {
         let steps = this.Simulation.Steps;
         for (let i = 0; i < steps; i++) {
-            langton.advance();
+            if (this.Grid.GetColor(this.Ant.X, this.Ant.Y) !== null) {
+                let color = this.Grid.GetColor(this.Ant.X, this.Ant.Y);
+                this.Grid.SetColor(this.Ant.X, this.Ant.Y, this.Pattern.GetConfiguration(color, "color") || "#FFFFFF");
+                this.Ant.Turn(this.Pattern.GetConfiguration(color, "direction"));
+                this.Grid.SetColor(this.Ant.X, this.Ant.Y, Ant.Color);
+            }
         }
     }
 
     switchSimulation() {
         this.Simulation.started = !this.Simulation.started;
-        if (this.Simulation.started) {
+        $("#Start").text(this.Simulation.started ? "Pause" : (this.Ant.NbSteps > 0 ? "Reprendre" : "Démarrer"));
+        if (this.Simulation .started) {
             langton.simulate();
         }
     }
 
     simulate() {
-        if (this.Simulation.started && this.Grid.GetColor(this.Ant.X, this.Ant.Y) !== null) {
+        if (this.Simulation.started) {
             langton.advance();
             setTimeout(() => langton.simulate(), this.Simulation.Gap);
         }
