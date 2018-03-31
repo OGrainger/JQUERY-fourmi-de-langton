@@ -148,3 +148,10 @@ table button {
     text-align: right;
 }
 
+.pattern-table {
+    width: 100%;
+}
+
+.alert {
+    color: red;
+}

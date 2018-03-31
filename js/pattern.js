@@ -8,15 +8,15 @@ class Pattern {
 
     onReady() {
 
+        $("table").on("change", $.proxy(this.onChangeSelect, this));
+
         let onSuccess = $.proxy(function (data) {
-            this.setHtml(data)
+            this.setHtml(data.patterns);
         }, this);
         let onComplete = $.proxy(function (xhr, status) {
-            $("#Id").prop("disabled", false)
+            $(".condition").removeClass("condition");
         }, this);
         let onError = $.proxy(function (xhr, status, error) {
-            //TODO : remove this line after pattern dev
-            this.setHtml(JSON.parse("{\"patterns\":[{\"name\":\"Simple\",\"steps\":[{\"if\":\"#FFFFFF\",\"then\":{\"color\":\"#000000\",\"direction\":\"right\"}},{\"if\":\"#000000\",\"then\":{\"color\":\"#FFFFFF\",\"direction\":\"left\"}}]},{\"name\":\"Tout droit\",\"steps\":[{\"if\":\"#FFFFFF\",\"then\":{\"color\":\"#DB1702\",\"direction\":\"left\"}},{\"if\":\"#DB1702\",\"then\":{\"color\":\"#008020\",\"direction\":\"left\"}},{\"if\":\"#008020\",\"then\":{\"color\":\"#FFFFFF\",\"direction\":\"right\"}}]},{\"name\":\"Inondation\",\"steps\":[{\"if\":\"#FFFFFF\",\"then\":{\"color\":\"#008020\",\"direction\":\"left\"}},{\"if\":\"#008020\",\"then\":{\"color\":\"#6D9ECE\",\"direction\":\"right\"}},{\"if\":\"#6D9ECE\",\"then\":{\"color\":\"#1F5FA0\",\"direction\":\"right\"}},{\"if\":\"#1F5FA0\",\"then\":{\"color\":\"#6D071A\",\"direction\":\"right\"}},{\"if\":\"#6D071A\",\"then\":{\"color\":\"#606060\",\"direction\":\"right\"}},{\"if\":\"#606060\",\"then\":{\"color\":\"#F0C300\",\"direction\":\"right\"}},{\"if\":\"#F0C300\",\"then\":{\"color\":\"#7F00FF\",\"direction\":\"left\"}},{\"if\":\"#7F00FF\",\"then\":{\"color\":\"#FF7F00\",\"direction\":\"left\"}},{\"if\":\"#FF7F00\",\"then\":{\"color\":\"#FFFFFF\",\"direction\":\"right\"}}]},{\"name\":\"Prisme\",\"steps\":[{\"if\":\"#FFFFFF\",\"then\":{\"color\":\"#7F00FF\",\"direction\":\"right\"}},{\"if\":\"#7F00FF\",\"then\":{\"color\":\"#6D9ECE\",\"direction\":\"right\"}},{\"if\":\"#6D9ECE\",\"then\":{\"color\":\"#1F5FA0\",\"direction\":\"left\"}},{\"if\":\"#1F5FA0\",\"then\":{\"color\":\"#6D071A\",\"direction\":\"left\"}},{\"if\":\"#6D071A\",\"then\":{\"color\":\"#606060\",\"direction\":\"left\"}},{\"if\":\"#606060\",\"then\":{\"color\":\"#F0C300\",\"direction\":\"right\"}},{\"if\":\"#F0C300\",\"then\":{\"color\":\"#000000\",\"direction\":\"left\"}},{\"if\":\"#000000\",\"then\":{\"color\":\"#FF7F00\",\"direction\":\"left\"}},{\"if\":\"#FF7F00\",\"then\":{\"color\":\"#E0115F\",\"direction\":\"left\"}},{\"if\":\"#E0115F\",\"then\":{\"color\":\"#DB1702\",\"direction\":\"right\"}},{\"if\":\"#DB1702\",\"then\":{\"color\":\"#008020\",\"direction\":\"right\"}},{\"if\":\"#008020\",\"then\":{\"color\":\"#FFFFFF\",\"direction\":\"right\"}}]},{\"name\":\"Serpent\",\"steps\":[{\"if\":\"#FFFFFF\",\"then\":{\"color\":\"#7F00FF\",\"direction\":\"left\"}},{\"if\":\"#7F00FF\",\"then\":{\"color\":\"#6D9ECE\",\"direction\":\"left\"}},{\"if\":\"#6D9ECE\",\"then\":{\"color\":\"#1F5FA0\",\"direction\":\"right\"}},{\"if\":\"#1F5FA0\",\"then\":{\"color\":\"#6D071A\",\"direction\":\"right\"}},{\"if\":\"#6D071A\",\"then\":{\"color\":\"#606060\",\"direction\":\"right\"}},{\"if\":\"#606060\",\"then\":{\"color\":\"#F0C300\",\"direction\":\"left\"}},{\"if\":\"#F0C300\",\"then\":{\"color\":\"#000000\",\"direction\":\"right\"}},{\"if\":\"#000000\",\"then\":{\"color\":\"#FF7F00\",\"direction\":\"left\"}},{\"if\":\"#FF7F00\",\"then\":{\"color\":\"#E0115F\",\"direction\":\"right\"}},{\"if\":\"#E0115F\",\"then\":{\"color\":\"#DB1702\",\"direction\":\"left\"}},{\"if\":\"#DB1702\",\"then\":{\"color\":\"#008020\",\"direction\":\"left\"}},{\"if\":\"#008020\",\"then\":{\"color\":\"#FFFFFF\",\"direction\":\"right\"}}]}]}"));
             console.log(xhr.status + " - " + xhr.statusText)
         }, this);
 
@@ -30,17 +30,91 @@ class Pattern {
 
         $.ajax("https://api.myjson.com/bins/crrrn", params);
 
+        $("#Pattern").on("change", $.proxy(this.setTable, this));
+
         console.log("Pattern.onReady")
     }
 
-    setHtml(data) {
-        console.log(data);
+    get Val() {
+        return $("#Pattern").val();
     }
 
+    onChangeSelect(e) {
+        $("#Pattern").val("");
+
+        //Si on change une couleur
+        if (e.target.parentElement.className === "then-color") {
+            let changedRow = e.target.parentElement.parentElement;
+            let rows = $("table tr");
+
+            //On enlève les lignes suivantes
+            for (let i in rows) {
+                if (rows[i].rowIndex > changedRow.rowIndex) {
+                    rows[i].remove();
+                }
+            }
+
+            //On alerte si la couleur est déjà présente
+            let warning = false;
+            for (let i in rows) {
+                if (rows[i].rowIndex > 1) {
+                    if (rows[i].rowIndex !== changedRow.rowIndex && rows[i].children[1].children[0].value === e.target.value) {
+                        warning = true;
+                    }
+                }
+            }
+            changedRow.children[1].children[0].className = warning ? "alert" : "";
+
+            //Si la couleur sélectionnée n'est pas 'blanc', on ajoute une ligne
+            if (e.target.value !== "#FFFFFF") {
+                let newPattern = {
+                    if: e.target.value,
+                    then: {
+                        color: "#FFFFFF",
+                        //Inverse la direction
+                        direction: changedRow.children[2].children[0].value === "left" ? "right" : "left"
+                    }
+                };
+                $(Pattern.GetHtmlRow(newPattern)).appendTo("#CurrentPattern > tbody");
+            }
+        }
+    }
+
+    GetConfiguration(color, type) {
+        let rows = $("#CurrentPattern > tbody")[0].rows;
+        let row = Array.prototype.find.call(rows, (row) => row.dataset.ifColor === color);
+        let td = Array.prototype.find.call(row.children, (td) => td.className === (type === "color" ? "then-color" : "then-direction"));
+        return td.children[0].value;
+    }
+
+    setHtml(patterns) {
+        this.Patterns = patterns;
+        this.GeneratePatternSelect();
+        this.setTable();
+    }
+
+    setTable() {
+        $("#CurrentPattern > tbody").empty();
+        this.Steps = this.Patterns.find(pattern => pattern.name === this.Val).steps;
+        for (let i in this.Steps) {
+            $(Pattern.GetHtmlRow(this.Steps[i])).appendTo("#CurrentPattern > tbody");
+        }
+    }
+
+    GeneratePatternSelect() {
+        let patternSelect = $("#Pattern");
+        let html = '<select>';
+        for (let i in this.Patterns) {
+            html += '<option value="' + this.Patterns[i].name + '"';
+            html += '>' + this.Patterns[i].name + '</option>'
+        }
+        patternSelect.html(html);
+        patternSelect.val("Simple");
+    }
 
     static GetSelect(json, selected) {
         let html = '<select>';
-        for (var property in json) {
+        for (let property in json) {
             html += '<option value="' + property + '"';
             if (selected === property) {
                 html += ' selected="selected"'
